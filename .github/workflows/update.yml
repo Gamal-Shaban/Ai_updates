@@ -1,0 +1,38 @@
+name: Update AI Tools Digest
+
+on:
+  schedule:
+    # 5:00 و17:00 UTC = 8 صباحًا و8 مساءً بتوقيت القاهرة (UTC+3)
+    - cron: '0 5 * * *'
+    - cron: '0 17 * * *'
+  workflow_dispatch: {}   # زرار تشغيل يدوي من تاب Actions
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate digest page
+        run: npm run generate
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "ai-digest-bot"
+          git config user.email "actions@github.com"
+          git add docs/index.html
+          if git diff --cached --quiet; then
+            echo "لا يوجد تغيير — مفيش أخبار جديدة عن آخر مرة."
+          else
+            git commit -m "تحديث تلقائي للنشرة"
+            git push
+          fi

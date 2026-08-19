@@ -1,0 +1,10 @@
+{
+  "name": "ai-news-digest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "نشرة أدوات الذكاء الاصطناعي — صفحة ثابتة تتحدث تلقائيًا عن طريق GitHub Actions",
+  "type": "commonjs",
+  "scripts": {
+    "generate": "node scripts/generate.js"
+  }
+}
