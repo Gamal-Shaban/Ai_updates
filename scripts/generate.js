@@ -9,85 +9,168 @@
  * مباشرة من GitHub (من غير إطار/iframe مقفول من جوجل)، فالروابط بتفتح عادي 100%.
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 const CONFIG = {
-  WINDOW_HOURS: 30,       // نطاق أوسع شوية من Apps Script عشان الصفحة متفضلش فاضية بين تحديث وتاني
-  MAX_PER_FEED: 6,
-  MAX_PER_PERSON: 4,
-  MAX_TOTAL: 40,
+  WINDOW_HOURS: 30, // نطاق أوسع شوية من Apps Script عشان الصفحة متفضلش فاضية بين تحديث وتاني
+  MAX_PER_FEED: 5,
+  MAX_PER_PERSON: 5,
+  MAX_TOTAL: 55,
   TRANSLATE: true,
-  TOOLS_ONLY: true
+  TOOLS_ONLY: true,
 };
 
 const TOOLS = [
-  { group: 'Claude / Anthropic', keys: ['claude', 'anthropic'] },
-  { group: 'OpenAI / GPT', keys: ['openai', 'chatgpt', 'gpt-', 'gpt4', 'gpt5', 'codex', 'sora', 'o3', 'o4', 'dall-e'] },
-  { group: 'Google / Gemini', keys: ['gemini', 'deepmind', 'google ai', 'notebooklm', 'veo'] },
-  { group: 'أدوات البرمجة', keys: ['copilot', 'cursor', 'windsurf', 'replit', 'devin', 'lovable', 'bolt.new', 'v0 by'] },
-  { group: 'Meta / Llama', keys: ['llama', 'meta ai'] },
-  { group: 'xAI / Grok', keys: ['grok', 'xai'] },
-  { group: 'نماذج مفتوحة', keys: ['deepseek', 'qwen', 'mistral', 'kimi', 'hugging face', 'falcon'] },
-  { group: 'أدوات إبداعية', keys: ['midjourney', 'runway', 'elevenlabs', 'stable diffusion', 'flux', 'suno', 'canva ai', 'figma ai'] },
-  { group: 'بحث ومساعدات', keys: ['perplexity', 'notion ai', 'manus', 'comet browser'] }
+  { group: "Claude / Anthropic", keys: ["claude", "anthropic"] },
+  {
+    group: "OpenAI / GPT",
+    keys: [
+      "openai",
+      "chatgpt",
+      "gpt-",
+      "gpt4",
+      "gpt5",
+      "codex",
+      "sora",
+      "o3",
+      "o4",
+      "dall-e",
+    ],
+  },
+  {
+    group: "Google / Gemini",
+    keys: ["gemini", "deepmind", "google ai", "notebooklm", "veo"],
+  },
+  {
+    group: "أدوات البرمجة",
+    keys: [
+      "copilot",
+      "cursor",
+      "windsurf",
+      "replit",
+      "devin",
+      "lovable",
+      "bolt.new",
+      "v0 by",
+    ],
+  },
+  { group: "Meta / Llama", keys: ["llama", "meta ai"] },
+  { group: "xAI / Grok", keys: ["grok", "xai"] },
+  {
+    group: "نماذج مفتوحة",
+    keys: ["deepseek", "qwen", "mistral", "kimi", "hugging face", "falcon"],
+  },
+  {
+    group: "أدوات إبداعية",
+    keys: [
+      "midjourney",
+      "runway",
+      "elevenlabs",
+      "stable diffusion",
+      "flux",
+      "suno",
+      "canva ai",
+      "figma ai",
+    ],
+  },
+  {
+    group: "بحث ومساعدات",
+    keys: ["perplexity", "notion ai", "manus", "comet browser"],
+  },
 ];
 
-const GENERIC_AI = ['artificial intelligence', ' ai ', 'ai tool', 'llm', 'language model', 'agent'];
+const GENERIC_AI = [
+  "artificial intelligence",
+  " ai ",
+  "ai tool",
+  "llm",
+  "language model",
+  "agent",
+];
 
 const FEEDS = [
-  { name: 'TechCrunch AI', url: 'https://techcrunch.com/category/artificial-intelligence/feed/' },
-  { name: 'The Verge AI', url: 'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml' },
-  { name: 'VentureBeat AI', url: 'https://venturebeat.com/category/ai/feed/' },
-  { name: 'Ars Technica', url: 'https://feeds.arstechnica.com/arstechnica/technology-lab' },
-  { name: 'MIT Tech Review', url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed' },
-  { name: 'OpenAI', url: 'https://openai.com/blog/rss.xml' },
-  { name: 'Google AI Blog', url: 'https://blog.google/technology/ai/rss/' },
-  { name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml' },
-  { name: 'GitHub Blog', url: 'https://github.blog/feed/' },
-  { name: 'Engadget AI', url: 'https://www.engadget.com/rss.xml' },
-  { name: 'ZDNet AI', url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' }
+  {
+    name: "TechCrunch AI",
+    url: "https://techcrunch.com/category/artificial-intelligence/feed/",
+  },
+  {
+    name: "The Verge AI",
+    url: "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+  },
+  { name: "VentureBeat AI", url: "https://venturebeat.com/category/ai/feed/" },
+  {
+    name: "Ars Technica",
+    url: "https://feeds.arstechnica.com/arstechnica/technology-lab",
+  },
+  {
+    name: "MIT Tech Review",
+    url: "https://www.technologyreview.com/topic/artificial-intelligence/feed",
+  },
+  { name: "OpenAI", url: "https://openai.com/blog/rss.xml" },
+  { name: "Google AI Blog", url: "https://blog.google/technology/ai/rss/" },
+  { name: "Hugging Face", url: "https://huggingface.co/blog/feed.xml" },
+  { name: "GitHub Blog", url: "https://github.blog/feed/" },
+  { name: "Engadget AI", url: "https://www.engadget.com/rss.xml" },
+  {
+    name: "ZDNet AI",
+    url: "https://www.zdnet.com/topic/artificial-intelligence/rss.xml",
+  },
 ];
 
 const PEOPLE = [
-  { name: 'Sam Altman (OpenAI)', handle: 'sama' },
-  { name: 'Elon Musk (xAI)', handle: 'elonmusk' },
-  { name: 'Demis Hassabis (DeepMind)', handle: 'demishassabis' },
-  { name: 'Yann LeCun (Meta AI)', handle: 'ylecun' },
-  { name: 'Andrej Karpathy', handle: 'karpathy' },
-  { name: 'Dario Amodei (Anthropic)', handle: 'DarioAmodei' },
-  { name: 'Ilya Sutskever', handle: 'ilyasut' },
-  { name: 'Mustafa Suleyman (Microsoft AI)', handle: 'mustafasuleyman' },
-  { name: 'Jensen Huang (NVIDIA)', handle: 'jensenhuang' },
-  { name: 'Andrew Ng', handle: 'AndrewYNg' },
-  { name: 'Yoshua Bengio', handle: 'Yoshua_Bengio' },
-  { name: 'Greg Brockman (OpenAI)', handle: 'gdb' },
-  { name: 'OpenAI', handle: 'OpenAI' },
-  { name: 'Anthropic', handle: 'AnthropicAI' },
-  { name: 'Google DeepMind', handle: 'GoogleDeepMind' },
-  { name: 'xAI', handle: 'xai' },
-  { name: 'Perplexity AI', handle: 'perplexity_ai' },
-  { name: 'Hugging Face', handle: 'huggingface' }
+  // مؤسسين وقيادات
+  { name: "Sam Altman (OpenAI)", handle: "sama" },
+  { name: "Elon Musk (xAI)", handle: "elonmusk" },
+  { name: "Demis Hassabis (DeepMind)", handle: "demishassabis" },
+  { name: "Dario Amodei (Anthropic)", handle: "DarioAmodei" },
+  { name: "Aravind Srinivas (Perplexity)", handle: "AravSrinivas" },
+  { name: "Arthur Mensch (Mistral)", handle: "arthurmensch" },
+  { name: "Clement Delangue (Hugging Face)", handle: "ClementDelangue" },
+  { name: "Emad Mostaque", handle: "EMostaque" },
+  { name: "Mustafa Suleyman (Microsoft AI)", handle: "mustafasuleyman" },
+  { name: "Jensen Huang (NVIDIA)", handle: "jensenhuang" },
+  { name: "Satya Nadella (Microsoft)", handle: "satyanadella" },
+  { name: "Sundar Pichai (Google)", handle: "sundarpichai" },
+  // باحثين ومهندسين معروفين
+  { name: "Yann LeCun (Meta AI)", handle: "ylecun" },
+  { name: "Andrej Karpathy", handle: "karpathy" },
+  { name: "Ilya Sutskever", handle: "ilyasut" },
+  { name: "Andrew Ng", handle: "AndrewYNg" },
+  { name: "Yoshua Bengio", handle: "Yoshua_Bengio" },
+  { name: "Fei-Fei Li", handle: "drfeifei" },
+  { name: "Greg Brockman (OpenAI)", handle: "gdb" },
+  { name: "Jack Clark (Anthropic)", handle: "jackclarkSF" },
+  { name: "Lex Fridman", handle: "lexfridman" },
+  // حسابات مؤسسات
+  { name: "OpenAI", handle: "OpenAI" },
+  { name: "Anthropic", handle: "AnthropicAI" },
+  { name: "Google DeepMind", handle: "GoogleDeepMind" },
+  { name: "xAI", handle: "xai" },
+  { name: "Perplexity AI", handle: "perplexity_ai" },
+  { name: "Hugging Face", handle: "huggingface" },
+  { name: "Mistral AI", handle: "MistralAI" },
   // ضيف أي حساب هنا: { name: 'الاسم', handle: 'اسم_الحساب_من_غير_@' }
 ];
 
 const NITTER_INSTANCES = [
-  'https://nitter.net',
-  'https://nitter.poast.org',
-  'https://nitter.privacyredirect.com',
-  'https://xcancel.com'
+  "https://nitter.net",
+  "https://nitter.poast.org",
+  "https://nitter.privacyredirect.com",
+  "https://xcancel.com",
 ];
 
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 
 async function fetchText(url, extraHeaders, timeoutMs) {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs || 15000);
   try {
     const res = await fetch(url, {
-      headers: Object.assign({ 'User-Agent': UA }, extraHeaders || {}),
-      redirect: 'follow',
-      signal: controller.signal
+      headers: Object.assign({ "User-Agent": UA }, extraHeaders || {}),
+      redirect: "follow",
+      signal: controller.signal,
     });
     clearTimeout(t);
     if (!res.ok) return null;
@@ -99,15 +182,22 @@ async function fetchText(url, extraHeaders, timeoutMs) {
 }
 
 function clean(s) {
-  return String(s || '')
-    .replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
-    .replace(/&#\d+;/g, '').replace(/&[a-z]+;/g, ' ')
-    .replace(/\s+/g, ' ').trim();
+  return String(s || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&#\d+;/g, "")
+    .replace(/&[a-z]+;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function esc(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 /**
@@ -118,29 +208,43 @@ function esc(s) {
  */
 
 function decodeEntities(s) {
-  return String(s || '')
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'")
-    .replace(/&amp;/g, '&');
+  return String(s || "")
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
 }
 
 function tagContent(block, tag) {
   // بياخد أول <tag ...>...</tag> أو <tag ... /> جوه الـ block، وبيرجع النص جواه (أو attribute href لو موجود)
-  const re = new RegExp('<' + tag + '(\\s[^>]*)?(?:\\/>|>([\\s\\S]*?)<\\/' + tag + '>)', 'i');
+  const re = new RegExp(
+    "<" + tag + "(\\s[^>]*)?(?:\\/>|>([\\s\\S]*?)<\\/" + tag + ">)",
+    "i",
+  );
   const m = block.match(re);
   if (!m) return null;
-  return { attrs: m[1] || '', text: m[2] != null ? decodeEntities(m[2]).trim() : '' };
+  return {
+    attrs: m[1] || "",
+    text: m[2] != null ? decodeEntities(m[2]).trim() : "",
+  };
 }
 
 function attrValue(attrsStr, name) {
   if (!attrsStr) return null;
-  const m = attrsStr.match(new RegExp(name + '\\s*=\\s*["\']([^"\']*)["\']', 'i'));
+  const m = attrsStr.match(
+    new RegExp(name + "\\s*=\\s*[\"']([^\"']*)[\"']", "i"),
+  );
   return m ? m[1] : null;
 }
 
 function extractBlocks(xmlText, tag) {
-  const re = new RegExp('<' + tag + '(?:\\s[^>]*)?>([\\s\\S]*?)<\\/' + tag + '>', 'gi');
+  const re = new RegExp(
+    "<" + tag + "(?:\\s[^>]*)?>([\\s\\S]*?)<\\/" + tag + ">",
+    "gi",
+  );
   const out = [];
   let m;
   while ((m = re.exec(xmlText)) !== null) out.push(m[1]);
@@ -149,19 +253,19 @@ function extractBlocks(xmlText, tag) {
 
 function parseFeed(xmlText, sourceName, cutoff) {
   const out = [];
-  if (!xmlText || typeof xmlText !== 'string') return out;
+  if (!xmlText || typeof xmlText !== "string") return out;
 
-  let entries = extractBlocks(xmlText, 'item');
+  let entries = extractBlocks(xmlText, "item");
   let isAtom = false;
   if (!entries.length) {
-    entries = extractBlocks(xmlText, 'entry');
+    entries = extractBlocks(xmlText, "entry");
     isAtom = entries.length > 0;
   }
   if (!entries.length) return out;
 
   for (let i = 0; i < entries.length && out.length < CONFIG.MAX_PER_FEED; i++) {
     const e = entries[i];
-    const titleNode = tagContent(e, 'title');
+    const titleNode = tagContent(e, "title");
     const title = titleNode ? titleNode.text : null;
 
     let link = null;
@@ -169,18 +273,28 @@ function parseFeed(xmlText, sourceName, cutoff) {
       // Atom: <link href="..." /> ممكن يتكرر، بناخد أول واحد له href
       const linkMatches = e.match(/<link[^>]*>/gi) || [];
       for (const lm of linkMatches) {
-        const href = attrValue(lm, 'href');
-        if (href) { link = href; break; }
+        const href = attrValue(lm, "href");
+        if (href) {
+          link = href;
+          break;
+        }
       }
     } else {
-      const linkNode = tagContent(e, 'link');
-      link = linkNode ? (linkNode.text || attrValue(linkNode.attrs, 'href')) : null;
+      const linkNode = tagContent(e, "link");
+      link = linkNode
+        ? linkNode.text || attrValue(linkNode.attrs, "href")
+        : null;
     }
 
-    const descNode = tagContent(e, isAtom ? 'summary' : 'description') || tagContent(e, 'content');
-    const desc = descNode ? descNode.text : '';
+    const descNode =
+      tagContent(e, isAtom ? "summary" : "description") ||
+      tagContent(e, "content");
+    const desc = descNode ? descNode.text : "";
 
-    const dateNode = tagContent(e, isAtom ? 'published' : 'pubDate') || tagContent(e, 'updated') || tagContent(e, 'dc:date');
+    const dateNode =
+      tagContent(e, isAtom ? "published" : "pubDate") ||
+      tagContent(e, "updated") ||
+      tagContent(e, "dc:date");
     const dateStr = dateNode ? dateNode.text : null;
 
     if (!title || !link) continue;
@@ -192,7 +306,7 @@ function parseFeed(xmlText, sourceName, cutoff) {
       link: String(link).trim(),
       summary: clean(desc).slice(0, 240),
       source: sourceName,
-      date: d
+      date: d,
     });
   }
   return out;
@@ -200,10 +314,17 @@ function parseFeed(xmlText, sourceName, cutoff) {
 
 async function collectFeedItems(cutoff) {
   const all = [];
-  let ok = 0, fail = 0;
+  let ok = 0,
+    fail = 0;
   for (const feed of FEEDS) {
-    const text = await fetchText(feed.url, { Accept: 'application/rss+xml, application/xml, text/xml, */*' });
-    if (!text) { fail++; console.log('فشل: ' + feed.name); continue; }
+    const text = await fetchText(feed.url, {
+      Accept: "application/rss+xml, application/xml, text/xml, */*",
+    });
+    if (!text) {
+      fail++;
+      console.log("فشل: " + feed.name);
+      continue;
+    }
     ok++;
     all.push(...parseFeed(text, feed.name, cutoff));
   }
@@ -217,19 +338,23 @@ async function fetchPeopleTweets(cutoff) {
     let got = false;
     for (const instance of NITTER_INSTANCES) {
       if (got) break;
-      const text = await fetchText(instance + '/' + person.handle + '/rss', {}, 10000);
+      const text = await fetchText(
+        instance + "/" + person.handle + "/rss",
+        {},
+        10000,
+      );
       if (!text) continue;
       const items = parseFeed(text, person.name, cutoff);
       if (items.length) {
         items.slice(0, CONFIG.MAX_PER_PERSON).forEach((it) => {
           it.isPerson = true;
-          it.group = 'تغريدات مؤثرين على X';
+          it.group = "تغريدات مؤثرين على X";
           out.push(it);
         });
       }
       got = true; // السيرفر رد (حتى لو من غير تغريدات جديدة) — منجربش سيرفر تاني
     }
-    if (!got) console.log('تعذّر جلب تغريدات ' + person.name);
+    if (!got) console.log("تعذّر جلب تغريدات " + person.name);
   }
   return out;
 }
@@ -237,67 +362,106 @@ async function fetchPeopleTweets(cutoff) {
 function classify(items) {
   items.forEach((it) => {
     if (it.isPerson) return;
-    const hay = (' ' + it.title + ' ' + it.summary + ' ').toLowerCase();
+    const hay = (" " + it.title + " " + it.summary + " ").toLowerCase();
     it.group = null;
     for (const tool of TOOLS) {
-      if (tool.keys.some((k) => hay.indexOf(k) !== -1)) { it.group = tool.group; break; }
+      if (tool.keys.some((k) => hay.indexOf(k) !== -1)) {
+        it.group = tool.group;
+        break;
+      }
     }
-    if (!it.group && GENERIC_AI.some((k) => hay.indexOf(k) !== -1)) it.group = 'أخبار AI عامة';
+    if (!it.group && GENERIC_AI.some((k) => hay.indexOf(k) !== -1))
+      it.group = "أخبار AI عامة";
   });
 }
 
 async function translate(text) {
-  if (!text) return '';
+  if (!text) return "";
   try {
-    const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ar&dt=t&q=' + encodeURIComponent(text);
-    const res = await fetch(url, { headers: { 'User-Agent': UA } });
+    const url =
+      "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ar&dt=t&q=" +
+      encodeURIComponent(text);
+    const res = await fetch(url, { headers: { "User-Agent": UA } });
     if (res.ok) {
       const data = await res.json();
-      const out = data[0].map((seg) => seg[0] || '').join('');
+      const out = data[0].map((seg) => seg[0] || "").join("");
       if (out.trim()) return out.trim();
     }
-  } catch (e) { /* هنرجع النص الأصلي */ }
+  } catch (e) {
+    /* هنرجع النص الأصلي */
+  }
   return text;
 }
 
 function groupItems(items) {
   const g = {};
-  items.forEach((it) => { (g[it.group] = g[it.group] || []).push(it); });
+  items.forEach((it) => {
+    (g[it.group] = g[it.group] || []).push(it);
+  });
   return g;
 }
 
 function ago(ms) {
   const h = Math.floor((Date.now() - ms) / 3600000);
-  if (h < 1) return 'الآن';
+  if (h < 1) return "الآن";
   if (h < 24) return `منذ ${h} ساعة`;
   return `منذ ${Math.floor(h / 24)} يوم`;
 }
 
 function render(items) {
-  const bg = '#0F1216', card = '#171B21', ink = '#E8EBF0', mute = '#8B96A5', line = '#242A33', amber = '#FFB020';
+  const bg = "#0F1216",
+    card = "#171B21",
+    ink = "#E8EBF0",
+    mute = "#8B96A5",
+    line = "#242A33",
+    amber = "#FFB020";
   const F = "system-ui,'Segoe UI',Tahoma,sans-serif";
   const now = new Date();
-  const today = now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Africa/Cairo' });
-  const updatedAt = now.toLocaleString('ar-EG', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit' });
+  const today = now.toLocaleDateString("ar-EG", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "Africa/Cairo",
+  });
+  const updatedAt = now.toLocaleString("ar-EG", {
+    timeZone: "Africa/Cairo",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
   const groups = groupItems(items);
   const groupNames = Object.keys(groups);
 
-  const chips = groupNames.map((g) =>
-    `<span style="display:inline-block;background:${card};border:1px solid ${line};border-radius:999px;padding:5px 12px;margin:0 0 6px 6px;font:600 12px/1 ${F};color:${ink};">${esc(g)} <span style="color:${amber};">${groups[g].length}</span></span>`
-  ).join('');
+  const chips = groupNames
+    .map(
+      (g) =>
+        `<span style="display:inline-block;background:${card};border:1px solid ${line};border-radius:999px;padding:5px 12px;margin:0 0 6px 6px;font:600 12px/1 ${F};color:${ink};">${esc(g)} <span style="color:${amber};">${groups[g].length}</span></span>`,
+    )
+    .join("");
 
-  const headlines = items.slice(0, 3).map((it) => `<li style="margin-bottom:6px;">${esc(it.titleAr || it.title)}</li>`).join('');
+  const headlines = items
+    .slice(0, 3)
+    .map(
+      (it) =>
+        `<li style="margin-bottom:6px;">${esc(it.titleAr || it.title)}</li>`,
+    )
+    .join("");
 
-  const summary = !items.length ? '' : `
+  const summary = !items.length
+    ? ""
+    : `
     <tr><td style="padding:16px 18px;background:${card};border:1px solid ${line};border-radius:10px;">
       <div style="font:700 13px/1 ${F};color:${amber};margin-bottom:10px;">ملخص اليوم</div>
       <div style="margin-bottom:12px;">${chips}</div>
       <ul style="margin:0;padding:0 18px 0 0;font:400 13px/1.9 ${F};color:${mute};">${headlines}</ul>
     </td></tr><tr><td style="height:18px;"></td></tr>`;
 
-  let body = groupNames.map((g) => {
-    const head = `<tr><td style="padding:14px 0 10px 0;font:800 15px/1 ${F};color:${ink};"><span style="color:${amber};">▍</span> ${esc(g)}</td></tr>`;
-    const rows = groups[g].map((it) => `
+  let body = groupNames
+    .map((g) => {
+      const head = `<tr><td style="padding:14px 0 10px 0;font:800 15px/1 ${F};color:${ink};"><span style="color:${amber};">▍</span> ${esc(g)}</td></tr>`;
+      const rows = groups[g]
+        .map(
+          (it) => `
       <tr><td style="padding:0 0 12px 0;">
         <div style="background:${card};border:1px solid ${line};border-right:3px solid ${amber};border-radius:10px;padding:14px 16px;">
           <div style="font:600 11px/1.4 ${F};color:${amber};margin-bottom:7px;">${esc(it.source)} &nbsp;·&nbsp; <span style="color:${mute};font-weight:400;">${ago(it.date)}</span></div>
@@ -307,9 +471,12 @@ function render(items) {
           <div style="font:400 13px/1.9 ${F};color:${mute};">${esc(it.summaryAr || it.summary)}</div>
           <a href="${esc(it.link)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:9px;font:600 12px/1 ${F};color:${amber};text-decoration:none;">اقرأ الخبر ←</a>
         </div>
-      </td></tr>`).join('');
-    return head + rows;
-  }).join('');
+      </td></tr>`,
+        )
+        .join("");
+      return head + rows;
+    })
+    .join("");
 
   if (!items.length) {
     body = `<tr><td style="padding:28px;text-align:center;color:${mute};font:400 15px ${F};">مفيش أخبار جديدة في آخر ${CONFIG.WINDOW_HOURS} ساعة (أو المصادر معطّلة مؤقتًا).</td></tr>`;
@@ -349,7 +516,7 @@ async function main() {
 
   const [feedItems, peopleItems] = await Promise.all([
     collectFeedItems(cutoff),
-    fetchPeopleTweets(cutoff)
+    fetchPeopleTweets(cutoff),
   ]);
 
   let all = feedItems.concat(peopleItems);
@@ -358,15 +525,20 @@ async function main() {
 
   const seen = new Set();
   all = all.filter((it) => {
-    const key = it.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 55);
+    const key = it.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "")
+      .slice(0, 55);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 
   all.sort((a, b) => {
-    const rank = (it) => (it.isPerson ? 0 : (it.group === 'أخبار AI عامة' ? 2 : 1));
-    const ra = rank(a), rb = rank(b);
+    const rank = (it) =>
+      it.isPerson ? 0 : it.group === "أخبار AI عامة" ? 2 : 1;
+    const ra = rank(a),
+      rb = rank(b);
     if (ra !== rb) return ra - rb;
     return b.date - a.date;
   });
@@ -380,13 +552,13 @@ async function main() {
   }
 
   const html = render(all);
-  const outDir = path.join(__dirname, '..', 'docs');
+  const outDir = path.join(__dirname, "..", "docs");
   fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, 'index.html'), html, 'utf8');
+  fs.writeFileSync(path.join(outDir, "index.html"), html, "utf8");
   console.log(`تم إنشاء الصفحة: ${all.length} خبر في ${outDir}/index.html`);
 }
 
 main().catch((err) => {
-  console.error('فشل التوليد:', err);
+  console.error("فشل التوليد:", err);
   process.exit(1);
 });
