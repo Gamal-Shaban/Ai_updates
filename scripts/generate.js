@@ -510,6 +510,11 @@ function render(items) {
         <input type="email" name="subscribe" required placeholder="بريدك الإلكتروني" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid ${line};background:${bg};color:${ink};font:400 13px ${F};" />
         <button type="submit" style="padding:9px 16px;border-radius:8px;border:none;background:${amber};color:#141414;font:700 13px ${F};cursor:pointer;">اشترك</button>
       </form>
+      <form method="GET" action="${esc(CONFIG.SUBSCRIBE_URL)}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;">
+        <span style="font:400 12px/1.6 ${F};color:${mute};white-space:nowrap;">مشترك بالفعل وعايز تلغي الاشتراك؟</span>
+        <input type="email" name="unsubscribe" required placeholder="بريدك الإلكتروني" style="flex:1;min-width:150px;padding:7px 10px;border-radius:8px;border:1px solid ${line};background:${bg};color:${ink};font:400 12px ${F};" />
+        <button type="submit" style="padding:7px 14px;border-radius:8px;border:1px solid ${line};background:transparent;color:${mute};font:600 12px ${F};cursor:pointer;">إلغاء الاشتراك</button>
+      </form>
     </td></tr>
     <tr><td style="height:18px;"></td></tr>
     ${summary}
