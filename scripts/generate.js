@@ -22,7 +22,7 @@ const CONFIG = {
   // رابط الـ Web App بتاع Apps Script (نفسه اللي بيبعت الإيميل اليومي) — ده بيستقبل
   // الاشتراكات عن طريق ?subscribe=email. غيّره لو عملت Deploy جديد ولينك الـ /exec اتغيّر.
   SUBSCRIBE_URL:
-    "https://script.google.com/macros/s/AKfycbzgtba7l9DwieLhGk4l_Nq16ye5mOKhJSR_MrNFZZ_K-KpzQp8eOPARNAUphSHpE90A/exec",
+    "https://script.google.com/macros/s/AKfycbxFebEg1UA5qoIffVC93i1Sg4o-DfPIV7JK3yJ1NgRCmQVmDY6bXov9oJcDpqq5wa88/exec",
 };
 
 const TOOLS = [
