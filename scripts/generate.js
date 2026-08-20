@@ -19,6 +19,10 @@ const CONFIG = {
   MAX_TOTAL: 55,
   TRANSLATE: true,
   TOOLS_ONLY: true,
+  // رابط الـ Web App بتاع Apps Script (نفسه اللي بيبعت الإيميل اليومي) — ده بيستقبل
+  // الاشتراكات عن طريق ?subscribe=email. غيّره لو عملت Deploy جديد ولينك الـ /exec اتغيّر.
+  SUBSCRIBE_URL:
+    "https://script.google.com/macros/s/AKfycbzgtba7l9DwieLhGk4l_Nq16ye5mOKhJSR_MrNFZZ_K-KpzQp8eOPARNAUphSHpE90A/exec",
 };
 
 const TOOLS = [
@@ -498,6 +502,14 @@ function render(items) {
       <div style="font:400 13px/1.8 ${F};color:${mute};margin-top:4px;">
         ${today} &nbsp;·&nbsp; آخر تحديث ${updatedAt} بتوقيت القاهرة &nbsp;·&nbsp; ${items.length} خبر &nbsp;·&nbsp; ${groupNames.length} قسم
       </div>
+    </td></tr>
+    <tr><td style="height:16px;"></td></tr>
+    <tr><td style="padding:14px 16px;background:${card};border:1px solid ${line};border-radius:10px;">
+      <form method="GET" action="${esc(CONFIG.SUBSCRIBE_URL)}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <span style="font:600 13px/1.6 ${F};color:${ink};white-space:nowrap;">📩 عايز النشرة توصلك يوميًا؟</span>
+        <input type="email" name="subscribe" required placeholder="بريدك الإلكتروني" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid ${line};background:${bg};color:${ink};font:400 13px ${F};" />
+        <button type="submit" style="padding:9px 16px;border-radius:8px;border:none;background:${amber};color:#141414;font:700 13px ${F};cursor:pointer;">اشترك</button>
+      </form>
     </td></tr>
     <tr><td style="height:18px;"></td></tr>
     ${summary}
