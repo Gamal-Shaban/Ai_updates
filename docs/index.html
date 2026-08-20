@@ -12,21 +12,22 @@
     <tr><td style="padding-bottom:20px;border-bottom:1px solid #242A33;">
       <div style="font:800 26px/1.4 system-ui,'Segoe UI',Tahoma,sans-serif;color:#E8EBF0;">أدوات الذكاء الاصطناعي</div>
       <div style="font:400 13px/1.8 system-ui,'Segoe UI',Tahoma,sans-serif;color:#8B96A5;margin-top:4px;">
-        الخميس، ٢٠ أغسطس ٢٠٢٦ &nbsp;·&nbsp; آخر تحديث ٠٢:١٨ م بتوقيت القاهرة &nbsp;·&nbsp; 12 خبر &nbsp;·&nbsp; 6 قسم
+        الخميس، ٢٠ أغسطس ٢٠٢٦ &nbsp;·&nbsp; آخر تحديث ٠٢:٢٥ م بتوقيت القاهرة &nbsp;·&nbsp; 12 خبر &nbsp;·&nbsp; 6 قسم
       </div>
     </td></tr>
     <tr><td style="height:16px;"></td></tr>
     <tr><td style="padding:14px 16px;background:#171B21;border:1px solid #242A33;border-radius:10px;">
-      <form method="GET" action="https://script.google.com/macros/s/AKfycbxFebEg1UA5qoIffVC93i1Sg4o-DfPIV7JK3yJ1NgRCmQVmDY6bXov9oJcDpqq5wa88/exec" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <form id="subForm" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         <span style="font:600 13px/1.6 system-ui,'Segoe UI',Tahoma,sans-serif;color:#E8EBF0;white-space:nowrap;">📩 عايز النشرة توصلك يوميًا؟</span>
-        <input type="email" name="subscribe" required placeholder="بريدك الإلكتروني" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid #242A33;background:#0F1216;color:#E8EBF0;font:400 13px system-ui,'Segoe UI',Tahoma,sans-serif;" />
+        <input id="subEmail" type="email" required placeholder="بريدك الإلكتروني" style="flex:1;min-width:160px;padding:9px 12px;border-radius:8px;border:1px solid #242A33;background:#0F1216;color:#E8EBF0;font:400 13px system-ui,'Segoe UI',Tahoma,sans-serif;" />
         <button type="submit" style="padding:9px 16px;border-radius:8px;border:none;background:#FFB020;color:#141414;font:700 13px system-ui,'Segoe UI',Tahoma,sans-serif;cursor:pointer;">اشترك</button>
       </form>
-      <form method="GET" action="https://script.google.com/macros/s/AKfycbxFebEg1UA5qoIffVC93i1Sg4o-DfPIV7JK3yJ1NgRCmQVmDY6bXov9oJcDpqq5wa88/exec" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;">
+      <form id="unsubForm" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;">
         <span style="font:400 12px/1.6 system-ui,'Segoe UI',Tahoma,sans-serif;color:#8B96A5;white-space:nowrap;">مشترك بالفعل وعايز تلغي الاشتراك؟</span>
-        <input type="email" name="unsubscribe" required placeholder="بريدك الإلكتروني" style="flex:1;min-width:150px;padding:7px 10px;border-radius:8px;border:1px solid #242A33;background:#0F1216;color:#E8EBF0;font:400 12px system-ui,'Segoe UI',Tahoma,sans-serif;" />
+        <input id="unsubEmail" type="email" required placeholder="بريدك الإلكتروني" style="flex:1;min-width:150px;padding:7px 10px;border-radius:8px;border:1px solid #242A33;background:#0F1216;color:#E8EBF0;font:400 12px system-ui,'Segoe UI',Tahoma,sans-serif;" />
         <button type="submit" style="padding:7px 14px;border-radius:8px;border:1px solid #242A33;background:transparent;color:#8B96A5;font:600 12px system-ui,'Segoe UI',Tahoma,sans-serif;cursor:pointer;">إلغاء الاشتراك</button>
       </form>
+      <div id="subMsg" style="display:none;margin-top:8px;font:600 12px/1.6 system-ui,'Segoe UI',Tahoma,sans-serif;"></div>
     </td></tr>
     <tr><td style="height:18px;"></td></tr>
     
@@ -161,5 +162,37 @@
     </td></tr>
   </table>
 </div>
+<script>
+(function () {
+  var SUB_URL = "https://script.google.com/macros/s/AKfycbxFebEg1UA5qoIffVC93i1Sg4o-DfPIV7JK3yJ1NgRCmQVmDY6bXov9oJcDpqq5wa88/exec";
+  var msg = document.getElementById('subMsg');
+  function showMsg(text, ok) {
+    msg.textContent = text;
+    msg.style.color = ok ? '#FFB020' : '#E5484D';
+    msg.style.display = 'block';
+  }
+  function send(param, email, successText) {
+    var url = SUB_URL + '?' + param + '=' + encodeURIComponent(email);
+    // no-cors: بنبعت الطلب من غير ما نقدر نقرا الرد (Apps Script مش بيسمح CORS)،
+    // فبنعتبر إن الطلب اتبعت بنجاح لو مفيش خطأ شبكة — ومنفضلش في نفس الصفحة أصلاً
+    // (منروحش لصفحة script.google.com فمفيش إشعار "Created by a Google Apps Script user").
+    fetch(url, { method: 'GET', mode: 'no-cors' })
+      .then(function () { showMsg(successText, true); })
+      .catch(function () { showMsg('حصلت مشكلة في الاتصال، جرب تاني.', false); });
+  }
+  document.getElementById('subForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('subEmail').value.trim();
+    if (!email) return;
+    send('subscribe', email, '✅ تم الاشتراك بنجاح — هتوصلك النشرة كل يوم.');
+  });
+  document.getElementById('unsubForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('unsubEmail').value.trim();
+    if (!email) return;
+    send('unsubscribe', email, '✅ تم إلغاء الاشتراك.');
+  });
+})();
+</script>
 </body>
 </html>
