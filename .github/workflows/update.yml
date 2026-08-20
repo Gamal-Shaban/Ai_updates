@@ -3,9 +3,9 @@ name: Update AI Tools Digest
 on:
   schedule:
     # 5:00 و17:00 UTC = 8 صباحًا و8 مساءً بتوقيت القاهرة (UTC+3)
-    - cron: '0 5 * * *'
-    - cron: '0 17 * * *'
-  workflow_dispatch: {}   # زرار تشغيل يدوي من تاب Actions
+    - cron: "0 5 * * *"
+    - cron: "0 17 * * *"
+  workflow_dispatch: {} # زرار تشغيل يدوي من تاب Actions
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "22"
 
       - name: Generate digest page
         run: npm run generate
